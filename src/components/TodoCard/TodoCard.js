@@ -1,4 +1,5 @@
 import { escapeHTML, makeSafeId } from '../../utils/html.js';
+import './TodoCard.css';
 
 export function createTodoCard(todo) {
   const title = escapeHTML(todo.title);
