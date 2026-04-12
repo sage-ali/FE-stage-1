@@ -1,23 +1,42 @@
+/* Todo Card Base */
 .todo-card {
-  max-width: 100%;
+  width: 100%;
   box-sizing: border-box;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+  background-color: var(--bg);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  border-radius: 12px;
   overflow: hidden;
+  font-family: var(--sans);
+  color: var(--text);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 @media (min-width: 768px) {
   .todo-card {
     max-width: 480px;
+    margin: 0 auto 2rem;
+    padding: 1.5rem;
   }
 }
 
-.todo-card__title,
-.todo-card__description {
-  overflow-wrap: anywhere;
-  word-break: normal;
-  hyphens: auto;
+/* Header & Typography */
+.todo-card__header {
+  margin-bottom: 1.25rem;
 }
 
 .todo-card__title {
+  margin: 0 0 0.5rem;
+  font-size: 1.5rem;
+  color: var(--text-h);
+  font-family: var(--heading);
+  overflow-wrap: anywhere;
+  word-break: normal;
+  hyphens: auto;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -25,25 +44,200 @@
   text-overflow: ellipsis;
 }
 
+.todo-card__description {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--text);
+  overflow-wrap: anywhere;
+  word-break: normal;
+  hyphens: auto;
+}
+
+/* Done State */
+.todo-card:has(input[type='checkbox']:checked) .todo-card__title,
+.todo-card:has(input[type='checkbox']:checked) .todo-card__description,
+.todo-card.is-done .todo-card__title,
+.todo-card.is-done .todo-card__description {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+.todo-card:has(input[type='checkbox']:checked),
+.todo-card.is-done {
+  border-color: var(--accent-border);
+  background-color: var(--social-bg);
+}
+
+/* Metadata Grid */
+.todo-card__meta {
+  margin-bottom: 1.25rem;
+}
+
+.todo-card__meta dl {
+  margin: 0;
+}
+
+.todo-card__meta-item {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.5rem 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.todo-card__meta-item dt {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-h);
+}
+
+.todo-card__meta-item dd {
+  margin: 0;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Tags Section */
+.todo-card__tags-section {
+  margin-bottom: 1.25rem;
+}
+
+.todo-card__tags-section h4 {
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-h);
+}
+
 .todo-card__tags {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
+  list-style: none;
   padding: 0;
   margin: 0;
-  list-style: none;
 }
 
 .todo-card__tag {
+  background: var(--accent-bg);
+  border: 1px solid var(--accent-border);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 0.85rem;
+  color: var(--text);
   max-width: 150px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   display: inline-block;
+  transition: background-color 0.2s ease;
 }
 
-.todo-card__meta-item dd {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+/* Footer & Actions */
+.todo-card__footer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+}
+
+@media (min-width: 480px) {
+  .todo-card__footer {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.todo-card__footer label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  min-height: 44px; /* Tap target */
+  user-select: none;
+}
+
+.todo-card__footer input[type='checkbox'] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  margin: 0;
+}
+
+.todo-card__actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.todo-card__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px; /* Tap target */
+  min-width: 80px;
+  padding: 0 1rem;
+  font-family: var(--sans);
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  background-color: var(--bg);
+  color: var(--text-h);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.todo-card__btn:hover {
+  background-color: var(--code-bg);
+  border-color: var(--accent-border);
+  transform: translateY(-1px);
+}
+
+.todo-card__btn:active {
+  transform: translateY(0);
+}
+
+/* Priority Badges */
+.todo-card__priority {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: capitalize;
+}
+
+.todo-card__priority[data-priority='high'] {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+.todo-card__priority[data-priority='medium'] {
+  background-color: #fef3c7;
+  color: #b45309;
+}
+
+.todo-card__priority[data-priority='low'] {
+  background-color: #dcfce7;
+  color: #15803d;
+}
+
+@media (prefers-color-scheme: dark) {
+  .todo-card__priority[data-priority='high'] {
+    background-color: rgba(239, 68, 68, 0.2);
+    color: #fca5a5;
+  }
+  .todo-card__priority[data-priority='medium'] {
+    background-color: rgba(245, 158, 11, 0.2);
+    color: #fcd34d;
+  }
+  .todo-card__priority[data-priority='low'] {
+    background-color: rgba(16, 185, 129, 0.2);
+    color: #6ee7b7;
+  }
 }
