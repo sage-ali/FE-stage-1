@@ -1,6 +1,21 @@
 import { escapeHTML, makeSafeId } from '../../utils/html.js';
 import './TodoCard.css';
 
+/**
+ * Creates an HTML template string for a todo card.
+ * @param {Object} todo - The todo object.
+ * @param {string} todo.id - The unique identifier for the todo.
+ * @param {string} todo.title - The title of the todo.
+ * @param {string} todo.description - The description of the todo.
+ * @param {string} todo.priority - The priority level (e.g., 'High', 'Medium', 'Low').
+ * @param {string} todo.status - The current status of the todo.
+ * @param {string} todo.dueDateISO - The due date in ISO 8601 format.
+ * @param {string} todo.dueDateFormatted - The due date in a human-readable format.
+ * @param {string} todo.timeRemaining - The computed time remaining string.
+ * @param {string[]} todo.tags - An array of tags associated with the todo.
+ * @param {boolean} todo.completed - Whether the todo is marked as complete.
+ * @returns {string} The HTML template string for the todo card.
+ */
 export function createTodoCard(todo) {
   const title = escapeHTML(todo.title);
   const description = escapeHTML(todo.description);
