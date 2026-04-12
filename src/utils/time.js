@@ -1,4 +1,24 @@
 /**
+ * Parses a target date into a Date object.
+ * If the input is a date-only string (YYYY-MM-DD), it is parsed as a local date
+ * to avoid UTC-related off-by-one errors.
+ *
+ * @param {Date|number|string} targetDate - The raw target date
+ * @returns {Date} - The parsed Date object
+ */
+function parseTargetDate(targetDate) {
+  if (
+    typeof targetDate === 'string' &&
+    /^\d{4}-\d{2}-\d{2}$/.test(targetDate)
+  ) {
+    const [year, month, day] = targetDate.split('-').map(Number);
+    return new Date(year, month - 1, day);
+  }
+
+  return new Date(targetDate);
+}
+
+/**
  * Returns a new Date object set to the start of the local day
  * for the given date. The resulting date will have the same year,
  * month, and day as the input date, but will have the time set to
@@ -64,7 +84,7 @@ function formatHoursAndMinutes(diffMs) {
  * @returns {string} - The formatted time remaining string
  */
 export function getTimeRemaining(targetDate) {
-  const target = new Date(targetDate);
+  const target = parseTargetDate(targetDate);
   if (Number.isNaN(target.getTime())) return 'Invalid date';
 
   const now = new Date();
