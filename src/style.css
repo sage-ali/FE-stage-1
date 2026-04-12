@@ -131,7 +131,9 @@ input[type='checkbox']:focus-visible {
   overflow-wrap: break-word;
   font-family: var(--sans);
   color: var(--text);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 @media (min-width: 768px) {
@@ -163,12 +165,15 @@ input[type='checkbox']:focus-visible {
 }
 
 /* Done State */
-.todo-card:has(input[type='checkbox']:checked) .todo-card__title {
+.todo-card:has(input[type='checkbox']:checked) .todo-card__title,
+.todo-completed .todo-card__title,
+.todo-completed .todo-card__description {
   text-decoration: line-through;
   opacity: 0.6;
 }
 
-.todo-card:has(input[type='checkbox']:checked) {
+.todo-card:has(input[type='checkbox']:checked),
+.todo-completed {
   border-color: var(--accent-border);
   background-color: var(--social-bg);
 }

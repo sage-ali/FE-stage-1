@@ -2,6 +2,7 @@ import './style.css';
 import { createTodoCard } from './components/TodoCard/TodoCard.js';
 
 const todoData = {
+  id: '12345',
   title: 'Complete HNG Stage 0',
   description:
     'Implement the Todo Card component with semantic HTML and data-testid attributes.',
@@ -14,5 +15,25 @@ const todoData = {
   completed: false,
 };
 
-document.querySelector('#todo-card-container').innerHTML =
-  createTodoCard(todoData);
+const container = document.querySelector('#todo-card-container');
+container.innerHTML = createTodoCard(todoData);
+
+// Toggle Handler
+const checkbox = container.querySelector(
+  '[data-testid="test-todo-complete-toggle"]'
+);
+const card = container.querySelector('.todo-card');
+const statusElement = container.querySelector(
+  '[data-testid="test-todo-status"]'
+);
+const originalStatus = todoData.status;
+
+checkbox.addEventListener('change', (e) => {
+  if (e.target.checked) {
+    statusElement.textContent = 'Done';
+    card.classList.add('todo-completed');
+  } else {
+    statusElement.textContent = originalStatus;
+    card.classList.remove('todo-completed');
+  }
+});
