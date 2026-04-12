@@ -16,17 +16,16 @@ function startOfLocalDay(date) {
  *
  * @param {number} value - The value to format (e.g. number of seconds)
  * @param {string} unit - The unit of the value (e.g. 'second', 'minute', 'hour', etc.)
- * @param {string} [locale] - The locale to format the relative time in (default: undefined)
- * @returns {string} - The formatted relative time string
+ * @returns {string} - The formatted relative time string (English only)
  */
-function formatRelativeTime(value, unit, locale = undefined) {
-  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
+function formatRelativeTime(value, unit) {
+  const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
   return rtf.format(value, unit);
 }
 
 /**
  * Formats a given time difference in milliseconds into a string
- * indicating the time remaining in a human-readable format.
+ * (English only) indicating the time remaining in a human-readable format.
  * The format will be one of the following: "Due in X hours Y minutes",
  * "Due in X hours", "Due in Y minutes", or "Due now".
  *
@@ -54,7 +53,7 @@ function formatHoursAndMinutes(diffMs) {
 }
 
 /**
- * Returns a string indicating the time remaining until the given target date.
+ * Returns a string (English only) indicating the time remaining until the given target date.
  * If the target date is in the past, it will return a string indicating the time that has passed since the target date.
  * The format of the returned string is as follows:
  * - If the target date is today, it will return a string in the format "Due in X hours Y minutes" or "Due in X minutes" or "Due now".
@@ -62,10 +61,9 @@ function formatHoursAndMinutes(diffMs) {
  * - If the target date is within the next 6 days, it will return a string in the format "Due in X days".
  * - If the target date is more than 6 days in the future, it will return a string in the format "Due on YYYY-MM-DD".
  * @param {Date|number|string} targetDate - The target date to compute the time remaining for
- * @param {string} [locale] - The locale to format the time remaining string in (default: undefined)
  * @returns {string} - The formatted time remaining string
  */
-export function getTimeRemaining(targetDate, locale = undefined) {
+export function getTimeRemaining(targetDate) {
   const target = new Date(targetDate);
   if (Number.isNaN(target.getTime())) return 'Invalid date';
 
@@ -102,26 +100,26 @@ export function getTimeRemaining(targetDate, locale = undefined) {
       return formatHoursAndMinutes(diffMs);
     }
 
-    if (hours >= 1) return `Due ${formatRelativeTime(hours, 'hour', locale)}`;
+    if (hours >= 1) return `Due ${formatRelativeTime(hours, 'hour')}`;
 
     const mins = Math.floor(diffMs / 60000);
-    if (mins >= 1) return `Due ${formatRelativeTime(mins, 'minute', locale)}`;
+    if (mins >= 1) return `Due ${formatRelativeTime(mins, 'minute')}`;
 
     return 'Due now';
   }
 
   if (dayDiff === 1) {
-    return `Due tomorrow at ${new Intl.DateTimeFormat(locale, {
+    return `Due tomorrow at ${new Intl.DateTimeFormat('en', {
       hour: 'numeric',
       minute: '2-digit',
     }).format(target)}`;
   }
 
   if (dayDiff > 1 && dayDiff <= 6) {
-    return `Due ${formatRelativeTime(dayDiff, 'day', locale)}`;
+    return `Due ${formatRelativeTime(dayDiff, 'day')}`;
   }
 
-  return `Due ${new Intl.DateTimeFormat(locale, {
+  return `Due ${new Intl.DateTimeFormat('en', {
     dateStyle: 'medium',
   }).format(target)}`;
 }

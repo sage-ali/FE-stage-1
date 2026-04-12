@@ -16,7 +16,7 @@ const todoData = {
 
 // Compute dynamic date formatting
 const initialDate = new Date(todoData.dueDateISO);
-todoData.dueDateFormatted = `${new Intl.DateTimeFormat(undefined, {
+todoData.dueDateFormatted = `${new Intl.DateTimeFormat('en', {
   dateStyle: 'medium',
 }).format(initialDate)}`;
 
