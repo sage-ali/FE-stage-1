@@ -53,7 +53,6 @@
 html,
 body {
   margin: 0;
-  overflow-x: hidden;
 }
 
 h1,
@@ -166,6 +165,7 @@ input[type='checkbox']:focus-visible {
 
 /* Done State */
 .todo-card:has(input[type='checkbox']:checked) .todo-card__title,
+.todo-card.is-done .todo-card__title,
 .todo-completed .todo-card__title,
 .todo-completed .todo-card__description {
   text-decoration: line-through;
@@ -173,6 +173,7 @@ input[type='checkbox']:focus-visible {
 }
 
 .todo-card:has(input[type='checkbox']:checked),
+.todo-card.is-done,
 .todo-completed {
   border-color: var(--accent-border);
   background-color: var(--social-bg);

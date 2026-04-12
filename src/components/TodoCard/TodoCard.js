@@ -32,7 +32,6 @@ export function createTodoCard(todo) {
   }
 
   const priorityLower = priority.toLowerCase();
-  const priorityClass = `priority-${priorityLower}`;
 
   return `
     <article class="${cardClasses.join(' ')}" data-testid="test-todo-card">
@@ -48,7 +47,7 @@ export function createTodoCard(todo) {
         <dl>
           <div class="todo-card__meta-item">
             <dt>Priority</dt>
-            <dd class="todo-card__priority priority-badge ${priorityClass}" data-priority="${priorityLower}" data-testid="test-todo-priority">${priority}</dd>
+            <dd class="todo-card__priority" data-priority="${priorityLower}" data-testid="test-todo-priority">${priority}</dd>
           </div>
           <div class="todo-card__meta-item">
             <dt>Status</dt>
