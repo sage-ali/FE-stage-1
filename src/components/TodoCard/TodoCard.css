@@ -12,8 +12,8 @@
 
 .todo-card__title,
 .todo-card__description {
-  overflow-wrap: break-word;
-  word-break: break-word;
+  overflow-wrap: anywhere;
+  word-break: normal;
   hyphens: auto;
 }
 

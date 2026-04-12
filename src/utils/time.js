@@ -9,16 +9,16 @@ export function getTimeRemaining(targetDate) {
 
   const now = new Date();
 
-  // Reset hours to compare full days
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const targetDay = new Date(
+  // Use UTC midnights to compare full days correctly (avoiding DST issues)
+  const today = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+  const targetDay = Date.UTC(
     target.getFullYear(),
     target.getMonth(),
     target.getDate()
   );
 
   const diffTime = targetDay - today;
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  const diffDays = Math.ceil(diffTime / 86400000); // 86400000 ms in a day
 
   if (diffDays === 0) {
     return 'Due now!';

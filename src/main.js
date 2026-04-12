@@ -19,53 +19,65 @@ const todoData = {
 todoData.timeRemaining = getTimeRemaining(todoData.dueDateISO);
 
 const container = document.querySelector('#todo-card-container');
-container.innerHTML = createTodoCard(todoData);
 
-// DOM Wiring
-const card = container.querySelector('.todo-card');
-const checkbox = container.querySelector(
-  '[data-testid="test-todo-complete-toggle"]'
-);
-const statusElement = container.querySelector(
-  '[data-testid="test-todo-status"]'
-);
-const editBtn = container.querySelector(
-  '[data-testid="test-todo-edit-button"]'
-);
-const deleteBtn = container.querySelector(
-  '[data-testid="test-todo-delete-button"]'
-);
+if (container) {
+  container.innerHTML = createTodoCard(todoData);
 
-const originalStatus = todoData.status;
+  // DOM Wiring
+  const card = container.querySelector('.todo-card');
+  const checkbox = container.querySelector(
+    '[data-testid="test-todo-complete-toggle"]'
+  );
+  const statusElement = container.querySelector(
+    '[data-testid="test-todo-status"]'
+  );
+  const editBtn = container.querySelector(
+    '[data-testid="test-todo-edit-button"]'
+  );
+  const deleteBtn = container.querySelector(
+    '[data-testid="test-todo-delete-button"]'
+  );
 
-// Initial state sync
-if (todoData.completed) {
-  card.classList.add('todo-completed');
-}
+  const originalStatus = todoData.status;
 
-// Checkbox toggle handler
-checkbox.addEventListener('change', (e) => {
-  if (e.target.checked) {
-    statusElement.textContent = 'Done';
-    card.classList.add('todo-completed');
-    console.log(`Todo "${todoData.title}" marked as complete.`);
-  } else {
-    statusElement.textContent = originalStatus;
-    card.classList.remove('todo-completed');
-    console.log(`Todo "${todoData.title}" marked as pending.`);
+  // Initial state sync
+  if (todoData.completed && card) {
+    card.classList.add('is-done');
   }
-});
 
-// Edit button handler
-editBtn.addEventListener('click', () => {
-  console.log(
-    `Edit button clicked for todo: "${todoData.title}" (ID: ${todoData.id})`
-  );
-});
+  // Checkbox toggle handler
+  if (checkbox && card && statusElement) {
+    checkbox.addEventListener('change', (e) => {
+      const isChecked = e.target.checked;
+      todoData.completed = isChecked;
 
-// Delete button handler
-deleteBtn.addEventListener('click', () => {
-  console.log(
-    `Delete button clicked for todo: "${todoData.title}" (ID: ${todoData.id})`
-  );
-});
+      if (isChecked) {
+        statusElement.textContent = 'Done';
+        card.classList.add('is-done');
+        console.log(`Todo "${todoData.title}" marked as complete.`);
+      } else {
+        statusElement.textContent = originalStatus;
+        card.classList.remove('is-done');
+        console.log(`Todo "${todoData.title}" marked as pending.`);
+      }
+    });
+  }
+
+  // Edit button handler
+  if (editBtn) {
+    editBtn.addEventListener('click', () => {
+      console.log(
+        `Edit button clicked for todo: "${todoData.title}" (ID: ${todoData.id})`
+      );
+    });
+  }
+
+  // Delete button handler
+  if (deleteBtn) {
+    deleteBtn.addEventListener('click', () => {
+      console.log(
+        `Delete button clicked for todo: "${todoData.title}" (ID: ${todoData.id})`
+      );
+    });
+  }
+}

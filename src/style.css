@@ -165,7 +165,9 @@ input[type='checkbox']:focus-visible {
 
 /* Done State */
 .todo-card:has(input[type='checkbox']:checked) .todo-card__title,
+.todo-card:has(input[type='checkbox']:checked) .todo-card__description,
 .todo-card.is-done .todo-card__title,
+.todo-card.is-done .todo-card__description,
 .todo-completed .todo-card__title,
 .todo-completed .todo-card__description {
   text-decoration: line-through;
@@ -349,6 +351,7 @@ input[type='checkbox']:focus-visible {
   margin: -1px;
   overflow: hidden;
   clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
   white-space: nowrap;
   border-width: 0;
 }
