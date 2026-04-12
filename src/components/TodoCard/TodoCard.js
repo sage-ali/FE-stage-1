@@ -70,7 +70,7 @@ export function createTodoCard(todo) {
       <section class="todo-card__tags-section">
         <h4>Tags</h4>
         <ul class="todo-card__tags tag-list" data-testid="test-todo-tags" aria-label="Tags list">
-          ${todo.tags.map((tag) => `<li class="todo-card__tag">${escapeHTML(tag)}</li>`).join('')}
+          ${(Array.isArray(todo.tags) ? todo.tags : []).map((tag) => `<li class="todo-card__tag">${escapeHTML(tag)}</li>`).join('')}
         </ul>
       </section>
 

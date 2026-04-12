@@ -1,11 +1,13 @@
+let safeIdCounter = 0;
+
 /**
  * Escapes special characters for HTML to prevent XSS.
- * @param {string} str - The string to escape.
+ * @param {any} str - The value to escape.
  * @returns {string} The escaped string.
  */
 export function escapeHTML(str) {
-  if (typeof str !== 'string') return String(str || '');
-  return str
+  const s = String(str == null ? '' : str);
+  return s
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
@@ -19,6 +21,8 @@ export function escapeHTML(str) {
  * @returns {string} A sanitized string safe for HTML ID attributes.
  */
 export function makeSafeId(id) {
-  if (id === null || id === undefined) return 'safe-id-null';
+  if (id === null || id === undefined) {
+    return `safe-id-${++safeIdCounter}`;
+  }
   return String(id).replace(/[^a-z0-9_-]/gi, '-');
 }
