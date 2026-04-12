@@ -22,7 +22,10 @@ export function createTodoCard(todo) {
   return `
     <article class="${cardClasses.join(' ')}" data-testid="test-todo-card">
       <header class="todo-card__header">
-        <h3 class="todo-card__title" data-testid="test-todo-title">${title}</h3>
+        <h3 class="todo-card__title" data-testid="test-todo-title">
+          ${todo.completed ? '<span class="sr-only">Completed: </span>' : ''}
+          ${title}
+        </h3>
         <p class="todo-card__description" data-testid="test-todo-description">${description}</p>
       </header>
 
