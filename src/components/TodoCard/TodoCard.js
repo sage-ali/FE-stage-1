@@ -61,7 +61,12 @@ export function createTodoCard(todo) {
           </div>
           <div class="todo-card__meta-item">
             <dt>Time Remaining</dt>
-            <dd data-testid="test-todo-time-remaining">${timeRemaining}</dd>
+            <div class="todo-card__meta-item">
+              <dt>Time Remaining</dt>
+              <dd>
+                <time data-testid="test-todo-time-remaining" datetime="${dueDateISO}">${timeRemaining}</time>
+              </dd>
+            </div>
           </div>
         </dl>
       </div>
@@ -69,7 +74,12 @@ export function createTodoCard(todo) {
       <section class="todo-card__tags-section">
         <h4>Tags</h4>
         <ul class="todo-card__tags tag-list" data-testid="test-todo-tags" aria-label="Tags list">
-          ${(Array.isArray(todo.tags) ? todo.tags : []).map((tag) => `<li class="todo-card__tag">${escapeHTML(tag)}</li>`).join('')}
+          ${(Array.isArray(todo.tags) ? todo.tags : [])
+            .map(
+              (tag) =>
+                `<li class="todo-card__tag" data-testid="test-todo-tag-${makeSafeId(tag)}">${escapeHTML(tag)}</li>`
+            )
+            .join('')}
         </ul>
       </section>
 

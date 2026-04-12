@@ -9,13 +9,18 @@ const todoData = {
     'Implement the Todo Card component with semantic HTML, accessibility features, and data-testid attributes.',
   priority: 'High',
   status: 'In Progress',
-  dueDateISO: '2026-04-12T23:59:59Z',
-  dueDateFormatted: 'April 12, 2026',
+  dueDateISO: '2026-04-16T22:59:59.000Z',
   tags: ['hng', 'stage-0', 'frontend'],
   completed: false,
 };
 
-// Compute dynamic time remaining
+// Compute dynamic date formatting
+const initialDate = new Date(todoData.dueDateISO);
+todoData.dueDateFormatted = `${new Intl.DateTimeFormat(undefined, {
+  dateStyle: 'medium',
+}).format(initialDate)}`;
+
+// Compute INITIAL time remaining
 todoData.timeRemaining = getTimeRemaining(todoData.dueDateISO);
 
 const container = document.querySelector('#todo-card-container');
@@ -23,7 +28,7 @@ const container = document.querySelector('#todo-card-container');
 if (container) {
   container.innerHTML = createTodoCard(todoData);
 
-  // DOM Wiring
+  // --- DOM Wiring ---
   const card = container.querySelector('.todo-card');
   const checkbox = container.querySelector(
     '[data-testid="test-todo-complete-toggle"]'
@@ -36,6 +41,10 @@ if (container) {
   );
   const deleteBtn = container.querySelector(
     '[data-testid="test-todo-delete-button"]'
+  );
+
+  const timeDisplayElement = container.querySelector(
+    '[data-testid="test-todo-time-remaining"]'
   );
 
   const originalStatus = todoData.status;
@@ -66,18 +75,24 @@ if (container) {
   // Edit button handler
   if (editBtn) {
     editBtn.addEventListener('click', () => {
-      console.log(
-        `Edit button clicked for todo: "${todoData.title}" (ID: ${todoData.id})`
-      );
+      console.log(`Edit button clicked for todo: "${todoData.title}"`);
     });
   }
 
   // Delete button handler
   if (deleteBtn) {
     deleteBtn.addEventListener('click', () => {
-      console.log(
-        `Delete button clicked for todo: "${todoData.title}" (ID: ${todoData.id})`
-      );
+      console.log(`Delete button clicked for todo: "${todoData.title}"`);
     });
+  }
+
+  if (timeDisplayElement && !todoData.completed) {
+    setInterval(() => {
+      const newTimeText = getTimeRemaining(todoData.dueDateISO);
+
+      if (timeDisplayElement.textContent !== newTimeText) {
+        timeDisplayElement.textContent = newTimeText;
+      }
+    }, 60000);
   }
 }

@@ -1,34 +1,127 @@
 /**
- * Computes a human-readable relative time string from a given date.
- * @param {string|Date} targetDate - The date to compare against.
- * @returns {string} A human-readable relative time string.
+ * Returns a new Date object set to the start of the local day
+ * for the given date. The resulting date will have the same year,
+ * month, and day as the input date, but will have the time set to
+ * 00:00:00.000 in the local time zone.
+ *
+ * @param {Date} date - The date to get the start of the local day for
+ * @returns {Date} - A new Date object set to the start of the local day
  */
-export function getTimeRemaining(targetDate) {
+function startOfLocalDay(date) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+/**
+ * Formats a relative time given a value and unit.
+ *
+ * @param {number} value - The value to format (e.g. number of seconds)
+ * @param {string} unit - The unit of the value (e.g. 'second', 'minute', 'hour', etc.)
+ * @param {string} [locale] - The locale to format the relative time in (default: undefined)
+ * @returns {string} - The formatted relative time string
+ */
+function formatRelativeTime(value, unit, locale = undefined) {
+  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
+  return rtf.format(value, unit);
+}
+
+/**
+ * Formats a given time difference in milliseconds into a string
+ * indicating the time remaining in a human-readable format.
+ * The format will be one of the following: "Due in X hours Y minutes",
+ * "Due in X hours", "Due in Y minutes", or "Due now".
+ *
+ * @param {number} diffMs - The time difference in milliseconds
+ * @returns {string} - The formatted time remaining string
+ */
+function formatHoursAndMinutes(diffMs) {
+  const totalMinutes = Math.floor(diffMs / 60000);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+
+  if (hours >= 1 && minutes >= 1) {
+    return `Due in ${hours} ${hours === 1 ? 'hour' : 'hours'} ${minutes} ${minutes === 1 ? 'minute' : 'minutes'}`;
+  }
+
+  if (hours >= 1) {
+    return `Due in ${hours} ${hours === 1 ? 'hour' : 'hours'}`;
+  }
+
+  if (minutes >= 1) {
+    return `Due in ${minutes} ${minutes === 1 ? 'minute' : 'minutes'}`;
+  }
+
+  return 'Due now';
+}
+
+/**
+ * Returns a string indicating the time remaining until the given target date.
+ * If the target date is in the past, it will return a string indicating the time that has passed since the target date.
+ * The format of the returned string is as follows:
+ * - If the target date is today, it will return a string in the format "Due in X hours Y minutes" or "Due in X minutes" or "Due now".
+ * - If the target date is tomorrow, it will return a string in the format "Due tomorrow at HH:MM".
+ * - If the target date is within the next 6 days, it will return a string in the format "Due in X days".
+ * - If the target date is more than 6 days in the future, it will return a string in the format "Due on YYYY-MM-DD".
+ * @param {Date|number|string} targetDate - The target date to compute the time remaining for
+ * @param {string} [locale] - The locale to format the time remaining string in (default: undefined)
+ * @returns {string} - The formatted time remaining string
+ */
+export function getTimeRemaining(targetDate, locale = undefined) {
   const target = new Date(targetDate);
-  if (isNaN(target.getTime())) return 'Invalid date';
+  if (Number.isNaN(target.getTime())) return 'Invalid date';
 
   const now = new Date();
+  const diffMs = target.getTime() - now.getTime();
 
-  // Use UTC midnights to compare full days correctly (avoiding DST issues)
-  const today = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
-  const targetDay = Date.UTC(
-    target.getFullYear(),
-    target.getMonth(),
-    target.getDate()
-  );
+  const targetDay = startOfLocalDay(target);
+  const nowDay = startOfLocalDay(now);
+  const dayDiff = Math.round((targetDay - nowDay) / 86400000);
 
-  const diffTime = targetDay - today;
-  const diffDays = Math.ceil(diffTime / 86400000); // 86400000 ms in a day
+  if (diffMs < 0) {
+    const absMs = Math.abs(diffMs);
+    const mins = Math.floor(absMs / 60000);
+    const hours = Math.floor(absMs / 3600000);
+    const days = Math.floor(absMs / 86400000);
 
-  if (diffDays === 0) {
+    if (days >= 1) return `Overdue by ${days} ${days === 1 ? 'day' : 'days'}`;
+    if (hours >= 1) {
+      const remMins = Math.floor((absMs % 3600000) / 60000);
+      if (hours < 6 && remMins > 0) {
+        return `Overdue by ${hours} ${hours === 1 ? 'hour' : 'hours'} ${remMins} ${remMins === 1 ? 'minute' : 'minutes'}`;
+      }
+      return `Overdue by ${hours} ${hours === 1 ? 'hour' : 'hours'}`;
+    }
+    if (mins >= 1)
+      return `Overdue by ${mins} ${mins === 1 ? 'minute' : 'minutes'}`;
     return 'Due now!';
-  } else if (diffDays === 1) {
-    return 'Due tomorrow';
-  } else if (diffDays > 1) {
-    return `Due in ${diffDays} days`;
-  } else if (diffDays === -1) {
-    return 'Overdue by 1 day';
-  } else {
-    return `Overdue by ${Math.abs(diffDays)} days`;
   }
+
+  if (dayDiff === 0) {
+    const hours = Math.floor(diffMs / 3600000);
+
+    if (hours < 6) {
+      return formatHoursAndMinutes(diffMs);
+    }
+
+    if (hours >= 1) return `Due ${formatRelativeTime(hours, 'hour', locale)}`;
+
+    const mins = Math.floor(diffMs / 60000);
+    if (mins >= 1) return `Due ${formatRelativeTime(mins, 'minute', locale)}`;
+
+    return 'Due now';
+  }
+
+  if (dayDiff === 1) {
+    return `Due tomorrow at ${new Intl.DateTimeFormat(locale, {
+      hour: 'numeric',
+      minute: '2-digit',
+    }).format(target)}`;
+  }
+
+  if (dayDiff > 1 && dayDiff <= 6) {
+    return `Due ${formatRelativeTime(dayDiff, 'day', locale)}`;
+  }
+
+  return `Due ${new Intl.DateTimeFormat(locale, {
+    dateStyle: 'medium',
+  }).format(target)}`;
 }
