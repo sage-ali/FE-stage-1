@@ -61,12 +61,9 @@ export function createTodoCard(todo) {
           </div>
           <div class="todo-card__meta-item">
             <dt>Time Remaining</dt>
-            <div class="todo-card__meta-item">
-              <dt>Time Remaining</dt>
-              <dd>
-                <time data-testid="test-todo-time-remaining" datetime="${dueDateISO}">${timeRemaining}</time>
-              </dd>
-            </div>
+            <dd>
+              <time data-testid="test-todo-time-remaining" datetime="${dueDateISO}">${timeRemaining}</time>
+            </dd>
           </div>
         </dl>
       </div>
