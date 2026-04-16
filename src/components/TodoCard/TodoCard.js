@@ -93,3 +93,153 @@ export function createTodoCard(todo) {
     </article>
   `;
 }
+
+/**
+ * Creates a stateful TodoCard component instance.
+ * @param {HTMLElement} containerElement - The container element to render the card into.
+ * @param {Object} initialTodo - The initial todo data.
+ * @returns {Object} The component instance with state and methods.
+ */
+export function createTodoCardComponent(containerElement, initialTodo) {
+  // Internal state
+  const state = {
+    isEditing: false,
+    isExpanded: false,
+    data: {
+      title: initialTodo.title || '',
+      description: initialTodo.description || '',
+      status: initialTodo.status || '',
+      priority: initialTodo.priority || '',
+      dueDate: initialTodo.dueDateISO || initialTodo.dueDate || '',
+      dueDateFormatted: initialTodo.dueDateFormatted || '',
+      timeRemaining: initialTodo.timeRemaining || '',
+      tags: initialTodo.tags || [],
+      completed: initialTodo.completed || false,
+      id: initialTodo.id || '',
+    },
+  };
+
+  // Cached DOM element references
+  let elements = {};
+
+  /**
+   * Updates the UI based on current state.
+   * This method is idempotent - safe to call repeatedly.
+   */
+  function updateUI() {
+    // Update text content for title, description, status, priority
+    if (elements.title) {
+      elements.title.textContent = state.data.completed
+        ? `Completed: ${state.data.title}`
+        : state.data.title;
+    }
+    if (elements.description) {
+      elements.description.textContent = state.data.description;
+    }
+    if (elements.status) {
+      elements.status.textContent = state.data.completed ? 'Done' : state.data.status;
+    }
+    if (elements.priority) {
+      elements.priority.textContent = state.data.priority;
+      elements.priority.setAttribute('data-priority', state.data.priority.toLowerCase());
+    }
+
+    // Update due date and time remaining
+    if (elements.dueDate) {
+      elements.dueDate.setAttribute('datetime', state.data.dueDate);
+      elements.dueDate.textContent = state.data.dueDateFormatted;
+    }
+    if (elements.timeRemaining) {
+      elements.timeRemaining.setAttribute('datetime', state.data.dueDate);
+      elements.timeRemaining.textContent = state.data.timeRemaining;
+    }
+
+    // Toggle CSS classes on card root
+    if (elements.card) {
+      // Toggle is-editing class
+      if (state.isEditing) {
+        elements.card.classList.add('is-editing');
+      } else {
+        elements.card.classList.remove('is-editing');
+      }
+
+      // Toggle is-expanded class
+      if (state.isExpanded) {
+        elements.card.classList.add('is-expanded');
+      } else {
+        elements.card.classList.remove('is-expanded');
+      }
+
+      // Toggle is-done class based on completed state
+      if (state.data.completed) {
+        elements.card.classList.add('is-done');
+      } else {
+        elements.card.classList.remove('is-done');
+      }
+    }
+
+    // Update checkbox checked state
+    if (elements.checkbox) {
+      elements.checkbox.checked = state.data.completed;
+    }
+  }
+
+  /**
+   * Renders the component into the container element.
+   */
+  function render() {
+    // Use the existing HTML template logic
+    containerElement.innerHTML = createTodoCard(state.data);
+
+    // Cache frequently-updated DOM element references
+    elements.card = containerElement.querySelector('[data-testid="test-todo-card"]');
+    elements.title = containerElement.querySelector('[data-testid="test-todo-title"]');
+    elements.description = containerElement.querySelector('[data-testid="test-todo-description"]');
+    elements.status = containerElement.querySelector('[data-testid="test-todo-status"]');
+    elements.priority = containerElement.querySelector('[data-testid="test-todo-priority"]');
+    elements.dueDate = containerElement.querySelector('[data-testid="test-todo-due-date"]');
+    elements.timeRemaining = containerElement.querySelector('[data-testid="test-todo-time-remaining"]');
+    elements.checkbox = containerElement.querySelector('[data-testid="test-todo-complete-toggle"]');
+    elements.editButton = containerElement.querySelector('[data-testid="test-todo-edit-button"]');
+    elements.deleteButton = containerElement.querySelector('[data-testid="test-todo-delete-button"]');
+
+    // Apply initial state to UI
+    updateUI();
+  }
+
+  /**
+   * Updates the component state.
+   * @param {Object} partialState - Partial state object to merge into current state.
+   */
+  function setState(partialState) {
+    if (!partialState) return;
+
+    // Shallow merge top-level properties (isEditing, isExpanded)
+    if (partialState.isEditing !== undefined) {
+      state.isEditing = partialState.isEditing;
+    }
+    if (partialState.isExpanded !== undefined) {
+      state.isExpanded = partialState.isExpanded;
+    }
+
+    // Deep merge updates into state.data
+    if (partialState.data) {
+      state.data = {
+        ...state.data,
+        ...partialState.data,
+      };
+    }
+
+    // Automatically call updateUI after merge
+    updateUI();
+  }
+
+  // Return the component instance
+  return {
+    state,
+    render,
+    updateUI,
+    setState,
+    elements, // Expose elements for event handler wiring
+  };
+}

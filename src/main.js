@@ -1,5 +1,5 @@
 import './style.css';
-import { createTodoCard } from './components/TodoCard/TodoCard.js';
+import { createTodoCardComponent } from './components/TodoCard/TodoCard.js';
 import { getTimeRemaining } from './utils/time.js';
 
 const todoData = {
@@ -26,73 +26,49 @@ todoData.timeRemaining = getTimeRemaining(todoData.dueDateISO);
 const container = document.querySelector('#todo-card-container');
 
 if (container) {
-  container.innerHTML = createTodoCard(todoData);
+  // Create and render the component using the stateful component factory
+  const component = createTodoCardComponent(container, todoData);
+  component.render();
 
-  // --- DOM Wiring ---
-  const card = container.querySelector('.todo-card');
-  const checkbox = container.querySelector(
-    '[data-testid="test-todo-complete-toggle"]'
-  );
-  const statusElement = container.querySelector(
-    '[data-testid="test-todo-status"]'
-  );
-  const editBtn = container.querySelector(
-    '[data-testid="test-todo-edit-button"]'
-  );
-  const deleteBtn = container.querySelector(
-    '[data-testid="test-todo-delete-button"]'
-  );
+  // --- Event Handlers ---
 
-  const timeDisplayElement = container.querySelector(
-    '[data-testid="test-todo-time-remaining"]'
-  );
-
-  const originalStatus = todoData.status;
-
-  // Initial state sync
-  if (todoData.completed && card) {
-    card.classList.add('is-done');
-  }
-
-  // Checkbox toggle handler
-  if (checkbox && card && statusElement) {
-    checkbox.addEventListener('change', (e) => {
+  // Checkbox toggle handler - uses setState for state-driven updates
+  if (component.elements && component.elements.checkbox) {
+    component.elements.checkbox.addEventListener('change', (e) => {
       const isChecked = e.target.checked;
-      todoData.completed = isChecked;
+
+      // Update state - status text and is-done class toggling flows through updateUI()
+      component.setState({ data: { completed: isChecked } });
 
       if (isChecked) {
-        statusElement.textContent = 'Done';
-        card.classList.add('is-done');
         console.log(`Todo "${todoData.title}" marked as complete.`);
       } else {
-        statusElement.textContent = originalStatus;
-        card.classList.remove('is-done');
         console.log(`Todo "${todoData.title}" marked as pending.`);
       }
     });
   }
 
-  // Edit button handler
-  if (editBtn) {
-    editBtn.addEventListener('click', () => {
-      console.log(`Edit button clicked for todo: "${todoData.title}"`);
+  // Edit button handler - console.log stub with access to component state
+  if (component.elements && component.elements.editButton) {
+    component.elements.editButton.addEventListener('click', () => {
+      console.log(`Edit button clicked for todo: "${component.state.data.title}"`);
     });
   }
 
-  // Delete button handler
-  if (deleteBtn) {
-    deleteBtn.addEventListener('click', () => {
-      console.log(`Delete button clicked for todo: "${todoData.title}"`);
+  // Delete button handler - console.log stub with access to component state
+  if (component.elements && component.elements.deleteButton) {
+    component.elements.deleteButton.addEventListener('click', () => {
+      console.log(`Delete button clicked for todo: "${component.state.data.title}"`);
     });
   }
 
-  if (timeDisplayElement && !todoData.completed) {
+  // Time remaining update - uses setState for state-driven updates
+  if (component.elements && component.elements.timeRemaining && !todoData.completed) {
     setInterval(() => {
       const newTimeText = getTimeRemaining(todoData.dueDateISO);
 
-      if (timeDisplayElement.textContent !== newTimeText) {
-        timeDisplayElement.textContent = newTimeText;
-      }
+      // Apply time remaining via setState
+      component.setState({ data: { timeRemaining: newTimeText } });
     }, 60000);
   }
 }
