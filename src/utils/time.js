@@ -143,3 +143,22 @@ export function getTimeRemaining(targetDate) {
     dateStyle: 'medium',
   }).format(target)}`;
 }
+
+/**
+ * Checks if a target date is in the past (overdue).
+ *
+ * @param {Date|number|string} targetDate - The target date to check
+ * @returns {boolean} - True if the date is in the past, false otherwise (including invalid dates)
+ */
+export function isOverdue(targetDate) {
+  // Handle null and undefined
+  if (targetDate === null || targetDate === undefined) {
+    return false;
+  }
+
+  const target = parseTargetDate(targetDate);
+  if (Number.isNaN(target.getTime())) return false;
+
+  const now = new Date();
+  return target.getTime() < now.getTime();
+}

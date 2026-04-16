@@ -1,6 +1,5 @@
 import './style.css';
-import { createTodoCardComponent } from './components/TodoCard/TodoCard.js';
-import { getTimeRemaining } from './utils/time.js';
+import { createTodoCardComponent, initTodoCardUpdates } from './components/TodoCard/TodoCard.js';
 
 const todoData = {
   id: 'hng-task-0',
@@ -20,8 +19,8 @@ todoData.dueDateFormatted = `${new Intl.DateTimeFormat('en', {
   dateStyle: 'medium',
 }).format(initialDate)}`;
 
-// Compute INITIAL time remaining
-todoData.timeRemaining = getTimeRemaining(todoData.dueDateISO);
+// Initial time remaining (used for initial render, will be updated by initTodoCardUpdates)
+todoData.timeRemaining = 'Due in 6 hours';
 
 const container = document.querySelector('#todo-card-container');
 
@@ -29,6 +28,9 @@ if (container) {
   // Create and render the component using the stateful component factory
   const component = createTodoCardComponent(container, todoData);
   component.render();
+
+  // Initialize polling updates for time remaining and overdue indicator
+  const cleanupUpdates = initTodoCardUpdates(container, todoData);
 
   // --- Helper: Focus Trap for Edit Mode ---
   let focusTrapListener = null;
@@ -217,13 +219,5 @@ if (container) {
     component.elements.deleteButton.addEventListener('click', () => {
       console.log(`Delete button clicked for todo: "${component.state.data.title}"`);
     });
-  }
-
-  // Time remaining update
-  if (component.elements.timeRemaining && !todoData.completed) {
-    setInterval(() => {
-      const newTimeText = getTimeRemaining(component.state.data.dueDate);
-      component.setState({ data: { timeRemaining: newTimeText } });
-    }, 60000);
   }
 }

@@ -1,4 +1,5 @@
 import { escapeHTML, makeSafeId } from '../../utils/html.js';
+import { getTimeRemaining, isOverdue } from '../../utils/time.js';
 import './TodoCard.css';
 
 /**
@@ -357,5 +358,78 @@ export function createTodoCardComponent(containerElement, initialTodo) {
     updateUI,
     setState,
     elements, // Expose elements for event handler wiring
+  };
+}
+
+/**
+ * Initializes polling updates for a todo card.
+ * Updates time remaining and overdue indicator every 30 seconds.
+ * Stops polling if the todo status is "Done".
+ *
+ * @param {HTMLElement} cardElement - The card element to update
+ * @param {Object} todo - The todo data object
+ * @returns {Function} - Cleanup function that clears the interval
+ */
+export function initTodoCardUpdates(cardElement, todo) {
+  const timeRemainingEl = cardElement.querySelector('[data-testid="test-todo-time-remaining"]');
+  const overdueIndicator = cardElement.querySelector('[data-testid="test-todo-overdue-indicator"]');
+
+  // Check if already done - skip interval setup
+  if (todo.status === 'Done' || todo.completed) {
+    if (timeRemainingEl) {
+      timeRemainingEl.textContent = 'Completed';
+    }
+    if (overdueIndicator) {
+      overdueIndicator.hidden = true;
+    }
+    return () => {}; // Return empty cleanup function
+  }
+
+  let intervalId = null;
+
+  function updateTimeDisplay() {
+    // Check if status changed to Done
+    const statusEl = cardElement.querySelector('[data-testid="test-todo-status"]');
+    const statusText = statusEl?.textContent || todo.status;
+    const isDone = statusText === 'Done' || todo.completed;
+
+    if (isDone) {
+      if (timeRemainingEl) {
+        timeRemainingEl.textContent = 'Completed';
+      }
+      if (overdueIndicator) {
+        overdueIndicator.hidden = true;
+      }
+      if (intervalId) {
+        clearInterval(intervalId);
+        intervalId = null;
+      }
+      return;
+    }
+
+    // Update time remaining
+    if (timeRemainingEl && todo.dueDate) {
+      const newTimeText = getTimeRemaining(todo.dueDate);
+      timeRemainingEl.textContent = newTimeText;
+    }
+
+    // Update overdue indicator
+    if (overdueIndicator && todo.dueDate) {
+      overdueIndicator.hidden = !isOverdue(todo.dueDate);
+    }
+  }
+
+  // Initial update
+  updateTimeDisplay();
+
+  // Set up 30-second interval
+  intervalId = setInterval(updateTimeDisplay, 30000);
+
+  // Return cleanup function
+  return () => {
+    if (intervalId) {
+      clearInterval(intervalId);
+      intervalId = null;
+    }
   };
 }

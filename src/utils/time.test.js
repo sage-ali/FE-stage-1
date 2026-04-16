@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { getTimeRemaining } from './time.js';
+import { getTimeRemaining, isOverdue } from './time.js';
 
 describe('time utils', () => {
   beforeEach(() => {
@@ -135,6 +135,70 @@ describe('time utils', () => {
       // Edge case: just barely overdue
       const justPast = new Date(now.getTime() - 1000);
       expect(getTimeRemaining(justPast.toISOString())).toBe('Due now!');
+    });
+
+    it('should handle singular time forms', () => {
+      const now = new Date('2026-04-12T12:00:00Z');
+      vi.setSystemTime(now);
+
+      // 1 hour
+      const in1Hour = new Date(now.getTime() + 1 * 3600000);
+      expect(getTimeRemaining(in1Hour.toISOString())).toBe('Due in 1 hour');
+
+      // 1 minute
+      const in1Min = new Date(now.getTime() + 1 * 60000);
+      expect(getTimeRemaining(in1Min.toISOString())).toBe('Due in 1 minute');
+
+      // 1 day (shows "Due tomorrow at" for dayDiff === 1)
+      const in1Day = new Date('2026-04-13T12:00:00Z');
+      expect(getTimeRemaining(in1Day.toISOString())).toMatch(/Due tomorrow at/);
+    });
+  });
+
+  describe('isOverdue', () => {
+    it('should return true for past dates', () => {
+      const now = new Date('2026-04-12T12:00:00Z');
+      vi.setSystemTime(now);
+
+      const pastDate = new Date(now.getTime() - 60000);
+      expect(isOverdue(pastDate.toISOString())).toBe(true);
+    });
+
+    it('should return false for future dates', () => {
+      const now = new Date('2026-04-12T12:00:00Z');
+      vi.setSystemTime(now);
+
+      const futureDate = new Date(now.getTime() + 60000);
+      expect(isOverdue(futureDate.toISOString())).toBe(false);
+    });
+
+    it('should return false for invalid dates', () => {
+      expect(isOverdue('invalid-date')).toBe(false);
+      expect(isOverdue('')).toBe(false);
+      expect(isOverdue(null)).toBe(false);
+      expect(isOverdue(undefined)).toBe(false);
+    });
+
+    it('should handle numeric timestamp inputs', () => {
+      const now = new Date('2026-04-12T12:00:00Z');
+      vi.setSystemTime(now);
+
+      const pastTimestamp = now.getTime() - 60000;
+      const futureTimestamp = now.getTime() + 60000;
+
+      expect(isOverdue(pastTimestamp)).toBe(true);
+      expect(isOverdue(futureTimestamp)).toBe(false);
+    });
+
+    it('should handle Date object inputs', () => {
+      const now = new Date('2026-04-12T12:00:00Z');
+      vi.setSystemTime(now);
+
+      const pastDate = new Date(now.getTime() - 60000);
+      const futureDate = new Date(now.getTime() + 60000);
+
+      expect(isOverdue(pastDate)).toBe(true);
+      expect(isOverdue(futureDate)).toBe(false);
     });
   });
 });
