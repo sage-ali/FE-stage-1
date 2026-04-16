@@ -122,6 +122,6 @@ describe('TodoCard component', () => {
       container.querySelector('ul[data-testid="test-todo-tags"]')
     ).not.toBeNull();
     expect(container.querySelector('input[type="checkbox"]')).not.toBeNull();
-    expect(container.querySelectorAll('button').length).toBe(5);
+    expect(container.querySelectorAll('button').length).toBe(6);
   });
 });
