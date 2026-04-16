@@ -32,9 +32,43 @@ if (container) {
 
   // --- Event Handlers ---
 
+  const timeDisplayElement = container.querySelector(
+    '[data-testid="test-todo-time-remaining"]'
+  );
+
+  // Select new elements
+  const expandToggle = container.querySelector(
+    '[data-testid="test-todo-expand-toggle"]'
+  );
+  const collapsibleSection = container.querySelector(
+    '[data-testid="test-todo-collapsible-section"]'
+  );
+  const statusControl = container.querySelector(
+    '[data-testid="test-todo-status-control"]'
+  );
+  const statusElement = container.querySelector(
+    '[data-testid="test-todo-status"]'
+  );
+  const saveBtn = container.querySelector(
+    '[data-testid="test-todo-save-button"]'
+  );
+  const cancelBtn = container.querySelector(
+    '[data-testid="test-todo-cancel-button"]'
+  );
+  const editForm = container.querySelector(
+    '[data-testid="test-todo-edit-form"]'
+  );
+  const checkbox = component.elements?.checkbox;
+  const card = container.querySelector('[data-testid="test-todo-card"]');
+
+  // Initial state sync
+  if (todoData.completed && card) {
+    card.classList.add('is-done');
+  }
+
   // Checkbox toggle handler - uses setState for state-driven updates
-  if (component.elements && component.elements.checkbox) {
-    component.elements.checkbox.addEventListener('change', (e) => {
+  if (checkbox && card && statusElement) {
+    checkbox.addEventListener('change', (e) => {
       const isChecked = e.target.checked;
 
       // Update state - status text and is-done class toggling flows through updateUI()
@@ -52,6 +86,43 @@ if (container) {
   if (component.elements && component.elements.editButton) {
     component.elements.editButton.addEventListener('click', () => {
       console.log(`Edit button clicked for todo: "${component.state.data.title}"`);
+      if (editForm) editForm.hidden = false;
+    });
+  }
+
+  // Cancel button handler
+  if (cancelBtn && editForm) {
+    cancelBtn.addEventListener('click', () => {
+      console.log(`Cancel button clicked for todo: "${todoData.title}"`);
+      editForm.hidden = true;
+    });
+  }
+
+  // Save button handler
+  if (saveBtn && editForm) {
+    editForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      console.log(`Save button clicked for todo: "${todoData.title}"`);
+      editForm.hidden = true;
+    });
+  }
+
+  // Expand toggle handler
+  if (expandToggle && collapsibleSection) {
+    expandToggle.addEventListener('click', () => {
+      const isExpanded = expandToggle.getAttribute('aria-expanded') === 'true';
+      expandToggle.setAttribute('aria-expanded', !isExpanded);
+      collapsibleSection.hidden = isExpanded;
+      console.log(`Collapsible section ${isExpanded ? 'collapsed' : 'expanded'}`);
+    });
+  }
+
+  // Status control handler
+  if (statusControl && statusElement) {
+    statusControl.addEventListener('change', (e) => {
+      const newStatus = e.target.value;
+      statusElement.textContent = newStatus;
+      console.log(`Status changed to: ${newStatus}`);
     });
   }
 

@@ -47,11 +47,21 @@ export function createTodoCard(todo) {
         <dl>
           <div class="todo-card__meta-item">
             <dt>Priority</dt>
-            <dd class="todo-card__priority" data-priority="${priorityLower}" data-testid="test-todo-priority">${priority}</dd>
+            <dd>
+              <span class="todo-card__priority" data-priority="${priorityLower}" data-testid="test-todo-priority">${priority}</span>
+              <span class="todo-card__priority-indicator" data-testid="test-todo-priority-indicator" aria-hidden="true"></span>
+            </dd>
           </div>
           <div class="todo-card__meta-item">
             <dt>Status</dt>
-            <dd data-testid="test-todo-status">${status}</dd>
+            <dd class="todo-card__status-wrapper">
+              <span data-testid="test-todo-status">${status}</span>
+              <select class="todo-card__status-control" data-testid="test-todo-status-control" aria-label="Change status">
+                <option value="Pending" ${status === 'Pending' ? 'selected' : ''}>Pending</option>
+                <option value="In Progress" ${status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+                <option value="Done" ${status === 'Done' || todo.completed ? 'selected' : ''}>Done</option>
+              </select>
+            </dd>
           </div>
           <div class="todo-card__meta-item">
             <dt>Due Date</dt>
@@ -61,24 +71,57 @@ export function createTodoCard(todo) {
           </div>
           <div class="todo-card__meta-item">
             <dt>Time Remaining</dt>
-            <dd>
+            <dd class="todo-card__time-remaining-wrapper">
               <time data-testid="test-todo-time-remaining" datetime="${dueDateISO}">${timeRemaining}</time>
+              <span class="todo-card__overdue-indicator" data-testid="test-todo-overdue-indicator" hidden>Overdue</span>
             </dd>
           </div>
         </dl>
       </div>
 
-      <section class="todo-card__tags-section">
-        <h4>Tags</h4>
-        <ul class="todo-card__tags tag-list" data-testid="test-todo-tags" aria-label="Tags list">
-          ${(Array.isArray(todo.tags) ? todo.tags : [])
-            .map(
-              (tag) =>
-                `<li class="todo-card__tag" data-testid="test-todo-tag-${makeSafeId(tag)}">${escapeHTML(tag)}</li>`
-            )
-            .join('')}
-        </ul>
+      <section class="todo-card__tags-section" data-testid="test-todo-tags-section">
+        <div class="todo-card__tags-header">
+          <h4>Tags</h4>
+          <button type="button" class="todo-card__expand-toggle" data-testid="test-todo-expand-toggle" aria-expanded="true" aria-controls="test-todo-collapsible-section">▼</button>
+        </div>
+        <section id="test-todo-collapsible-section" class="todo-card__collapsible" data-testid="test-todo-collapsible-section">
+          <ul class="todo-card__tags tag-list" data-testid="test-todo-tags" aria-label="Tags list">
+            ${(Array.isArray(todo.tags) ? todo.tags : [])
+              .map(
+                (tag) =>
+                  `<li class="todo-card__tag" data-testid="test-todo-tag-${makeSafeId(tag)}">${escapeHTML(tag)}</li>`
+              )
+              .join('')}
+          </ul>
+        </section>
       </section>
+
+      <form class="todo-card__edit-form" data-testid="test-todo-edit-form" hidden>
+        <div class="todo-card__edit-field">
+          <label for="edit-title-${safeId}">Title</label>
+          <input type="text" id="edit-title-${safeId}" data-testid="test-todo-edit-title-input" placeholder="Enter title" value="${title}">
+        </div>
+        <div class="todo-card__edit-field">
+          <label for="edit-description-${safeId}">Description</label>
+          <textarea id="edit-description-${safeId}" data-testid="test-todo-edit-description-input" placeholder="Enter description">${description}</textarea>
+        </div>
+        <div class="todo-card__edit-field">
+          <label for="edit-priority-${safeId}">Priority</label>
+          <select id="edit-priority-${safeId}" data-testid="test-todo-edit-priority-select">
+            <option value="Low" ${priority === 'Low' ? 'selected' : ''}>Low</option>
+            <option value="Medium" ${priority === 'Medium' ? 'selected' : ''}>Medium</option>
+            <option value="High" ${priority === 'High' ? 'selected' : ''}>High</option>
+          </select>
+        </div>
+        <div class="todo-card__edit-field">
+          <label for="edit-due-date-${safeId}">Due Date</label>
+          <input type="datetime-local" id="edit-due-date-${safeId}" data-testid="test-todo-edit-due-date-input" value="${todo.dueDateISO ? todo.dueDateISO.slice(0, 16) : ''}">
+        </div>
+        <div class="todo-card__edit-actions">
+          <button type="submit" class="todo-card__btn todo-card__btn--primary" data-testid="test-todo-save-button">Save</button>
+          <button type="button" class="todo-card__btn" data-testid="test-todo-cancel-button">Cancel</button>
+        </div>
+      </form>
 
       <footer class="todo-card__footer">
         <label for="todo-complete-${safeId}">
