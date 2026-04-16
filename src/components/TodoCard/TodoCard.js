@@ -26,12 +26,19 @@ export function createTodoCard(todo) {
   const dueDateISO = escapeHTML(todo.dueDateISO);
   const safeId = makeSafeId(todo.id);
 
-  const cardClasses = ['todo-card'];
+  const cardClasses = ['todo-card', 'todo-card--viewing'];
   if (todo.completed) {
     cardClasses.push('is-done');
   }
 
   const priorityLower = priority.toLowerCase();
+
+  // Determine if this is the "Done" status
+  const isDoneStatus = status === 'Done' || todo.completed;
+  const statusValue = isDoneStatus ? 'Done' : status;
+
+  // Extract date for date input (YYYY-MM-DD format)
+  const dateValue = dueDateISO ? dueDateISO.split('T')[0] : '';
 
   return `
     <article class="${cardClasses.join(' ')}" data-testid="test-todo-card">
@@ -40,7 +47,72 @@ export function createTodoCard(todo) {
           ${todo.completed ? '<span class="sr-only">Completed: </span>' : ''}
           ${title}
         </h3>
-        <p class="todo-card__description" data-testid="test-todo-description">${description}</p>
+
+        <!-- Expand/Collapse toggle -->
+        <button
+          type="button"
+          class="todo-card__expand-toggle"
+          data-testid="test-todo-expand-toggle"
+          aria-expanded="false"
+          aria-controls="todo-description-${safeId}"
+          aria-label="Toggle description visibility"
+        >▾</button>
+
+        <!-- View mode description -->
+        <p class="todo-card__description"
+           data-testid="test-todo-description"
+           id="todo-description-${safeId}">${description}</p>
+
+        <!-- Edit form (hidden by default) -->
+        <form class="todo-card__edit-form"
+              data-testid="test-todo-edit-form"
+              hidden>
+          <div class="todo-card__edit-field">
+            <label for="edit-title-${safeId}">Title</label>
+            <input type="text"
+                   id="edit-title-${safeId}"
+                   name="title"
+                   data-testid="test-todo-edit-title"
+                   value="${title}"
+                   required>
+          </div>
+
+          <div class="todo-card__edit-field">
+            <label for="edit-description-${safeId}">Description</label>
+            <textarea id="edit-description-${safeId}"
+                      name="description"
+                      data-testid="test-todo-edit-description">${description}</textarea>
+          </div>
+
+          <div class="todo-card__edit-field">
+            <label for="edit-priority-${safeId}">Priority</label>
+            <select id="edit-priority-${safeId}"
+                    name="priority"
+                    data-testid="test-todo-edit-priority">
+              <option value="High" ${priority === 'High' ? 'selected' : ''}>High</option>
+              <option value="Medium" ${priority === 'Medium' ? 'selected' : ''}>Medium</option>
+              <option value="Low" ${priority === 'Low' ? 'selected' : ''}>Low</option>
+            </select>
+          </div>
+
+          <div class="todo-card__edit-field">
+            <label for="edit-due-date-${safeId}">Due Date</label>
+            <input type="date"
+                   id="edit-due-date-${safeId}"
+                   name="dueDate"
+                   data-testid="test-todo-edit-due-date"
+                   value="${dateValue}">
+          </div>
+
+          <div class="todo-card__edit-actions">
+            <button type="button"
+                    class="todo-card__btn todo-card__btn--secondary"
+                    data-testid="test-todo-cancel-button">Cancel</button>
+            <button type="submit"
+                    class="todo-card__btn todo-card__btn--primary"
+                    data-testid="test-todo-save-button">Save</button>
+          </div>
+        </form>
       </header>
 
       <div class="todo-card__meta" role="group" aria-label="Todo metadata">
@@ -54,14 +126,14 @@ export function createTodoCard(todo) {
           </div>
           <div class="todo-card__meta-item">
             <dt>Status</dt>
-            <dd class="todo-card__status-wrapper">
-              <span data-testid="test-todo-status">${status}</span>
-              <select class="todo-card__status-control" data-testid="test-todo-status-control" aria-label="Change status">
-                <option value="Pending" ${status === 'Pending' ? 'selected' : ''}>Pending</option>
-                <option value="In Progress" ${status === 'In Progress' ? 'selected' : ''}>In Progress</option>
-                <option value="Done" ${status === 'Done' || todo.completed ? 'selected' : ''}>Done</option>
-              </select>
-            </dd>
+            <dd data-testid="test-todo-status">${status}</dd>
+            <select class="todo-card__status-select"
+                    data-testid="test-todo-status-select"
+                    aria-label="Change status">
+              <option value="Pending" ${statusValue === 'Pending' ? 'selected' : ''}>Pending</option>
+              <option value="In Progress" ${statusValue === 'In Progress' ? 'selected' : ''}>In Progress</option>
+              <option value="Done" ${statusValue === 'Done' ? 'selected' : ''}>Done</option>
+            </select>
           </div>
           <div class="todo-card__meta-item">
             <dt>Due Date</dt>
@@ -95,33 +167,6 @@ export function createTodoCard(todo) {
           </ul>
         </section>
       </section>
-
-      <form class="todo-card__edit-form" data-testid="test-todo-edit-form" hidden>
-        <div class="todo-card__edit-field">
-          <label for="edit-title-${safeId}">Title</label>
-          <input type="text" id="edit-title-${safeId}" data-testid="test-todo-edit-title-input" placeholder="Enter title" value="${title}">
-        </div>
-        <div class="todo-card__edit-field">
-          <label for="edit-description-${safeId}">Description</label>
-          <textarea id="edit-description-${safeId}" data-testid="test-todo-edit-description-input" placeholder="Enter description">${description}</textarea>
-        </div>
-        <div class="todo-card__edit-field">
-          <label for="edit-priority-${safeId}">Priority</label>
-          <select id="edit-priority-${safeId}" data-testid="test-todo-edit-priority-select">
-            <option value="Low" ${priority === 'Low' ? 'selected' : ''}>Low</option>
-            <option value="Medium" ${priority === 'Medium' ? 'selected' : ''}>Medium</option>
-            <option value="High" ${priority === 'High' ? 'selected' : ''}>High</option>
-          </select>
-        </div>
-        <div class="todo-card__edit-field">
-          <label for="edit-due-date-${safeId}">Due Date</label>
-          <input type="datetime-local" id="edit-due-date-${safeId}" data-testid="test-todo-edit-due-date-input" value="${todo.dueDateISO ? todo.dueDateISO.slice(0, 16) : ''}">
-        </div>
-        <div class="todo-card__edit-actions">
-          <button type="submit" class="todo-card__btn todo-card__btn--primary" data-testid="test-todo-save-button">Save</button>
-          <button type="button" class="todo-card__btn" data-testid="test-todo-cancel-button">Cancel</button>
-        </div>
-      </form>
 
       <footer class="todo-card__footer">
         <label for="todo-complete-${safeId}">
@@ -202,8 +247,12 @@ export function createTodoCardComponent(containerElement, initialTodo) {
       // Toggle is-editing class
       if (state.isEditing) {
         elements.card.classList.add('is-editing');
+        elements.card.classList.remove('todo-card--viewing');
+        elements.card.classList.add('todo-card--editing');
       } else {
         elements.card.classList.remove('is-editing');
+        elements.card.classList.remove('todo-card--editing');
+        elements.card.classList.add('todo-card--viewing');
       }
 
       // Toggle is-expanded class
@@ -221,9 +270,24 @@ export function createTodoCardComponent(containerElement, initialTodo) {
       }
     }
 
+    // Update expand toggle aria-expanded
+    if (elements.expandToggle) {
+      elements.expandToggle.setAttribute('aria-expanded', state.isExpanded ? 'true' : 'false');
+    }
+
     // Update checkbox checked state
     if (elements.checkbox) {
       elements.checkbox.checked = state.data.completed;
+    }
+
+    // Update status select value
+    if (elements.statusSelect) {
+      elements.statusSelect.value = state.data.completed ? 'Done' : state.data.status;
+    }
+
+    // Toggle edit form visibility
+    if (elements.editForm) {
+      elements.editForm.hidden = !state.isEditing;
     }
   }
 
@@ -239,12 +303,21 @@ export function createTodoCardComponent(containerElement, initialTodo) {
     elements.title = containerElement.querySelector('[data-testid="test-todo-title"]');
     elements.description = containerElement.querySelector('[data-testid="test-todo-description"]');
     elements.status = containerElement.querySelector('[data-testid="test-todo-status"]');
+    elements.statusSelect = containerElement.querySelector('[data-testid="test-todo-status-select"]');
     elements.priority = containerElement.querySelector('[data-testid="test-todo-priority"]');
     elements.dueDate = containerElement.querySelector('[data-testid="test-todo-due-date"]');
     elements.timeRemaining = containerElement.querySelector('[data-testid="test-todo-time-remaining"]');
     elements.checkbox = containerElement.querySelector('[data-testid="test-todo-complete-toggle"]');
     elements.editButton = containerElement.querySelector('[data-testid="test-todo-edit-button"]');
     elements.deleteButton = containerElement.querySelector('[data-testid="test-todo-delete-button"]');
+    elements.expandToggle = containerElement.querySelector('[data-testid="test-todo-expand-toggle"]');
+    elements.editForm = containerElement.querySelector('[data-testid="test-todo-edit-form"]');
+    elements.saveButton = containerElement.querySelector('[data-testid="test-todo-save-button"]');
+    elements.cancelButton = containerElement.querySelector('[data-testid="test-todo-cancel-button"]');
+    elements.editTitle = containerElement.querySelector('[data-testid="test-todo-edit-title"]');
+    elements.editDescription = containerElement.querySelector('[data-testid="test-todo-edit-description"]');
+    elements.editPriority = containerElement.querySelector('[data-testid="test-todo-edit-priority"]');
+    elements.editDueDate = containerElement.querySelector('[data-testid="test-todo-edit-due-date"]');
 
     // Apply initial state to UI
     updateUI();

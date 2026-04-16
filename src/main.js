@@ -30,115 +30,199 @@ if (container) {
   const component = createTodoCardComponent(container, todoData);
   component.render();
 
-  // --- Event Handlers ---
+  // --- Helper: Focus Trap for Edit Mode ---
+  let focusTrapListener = null;
 
-  const timeDisplayElement = container.querySelector(
-    '[data-testid="test-todo-time-remaining"]'
-  );
+  /**
+   * Enable focus trap within the edit form.
+   */
+  function enableFocusTrap(form) {
+    const focusableSelectors = [
+      'input:not([disabled])',
+      'textarea:not([disabled])',
+      'select:not([disabled])',
+      'button:not([disabled])',
+    ].join(', ');
 
-  // Select new elements
-  const expandToggle = container.querySelector(
-    '[data-testid="test-todo-expand-toggle"]'
-  );
-  const collapsibleSection = container.querySelector(
-    '[data-testid="test-todo-collapsible-section"]'
-  );
-  const statusControl = container.querySelector(
-    '[data-testid="test-todo-status-control"]'
-  );
-  const statusElement = container.querySelector(
-    '[data-testid="test-todo-status"]'
-  );
-  const saveBtn = container.querySelector(
-    '[data-testid="test-todo-save-button"]'
-  );
-  const cancelBtn = container.querySelector(
-    '[data-testid="test-todo-cancel-button"]'
-  );
-  const editForm = container.querySelector(
-    '[data-testid="test-todo-edit-form"]'
-  );
-  const checkbox = component.elements?.checkbox;
-  const card = container.querySelector('[data-testid="test-todo-card"]');
+    const focusableElements = form.querySelectorAll(focusableSelectors);
+    const firstElement = focusableElements[0];
+    const lastElement = focusableElements[focusableElements.length - 1];
 
-  // Initial state sync
-  if (todoData.completed && card) {
-    card.classList.add('is-done');
+    focusTrapListener = (e) => {
+      if (e.key === 'Tab') {
+        if (e.shiftKey && document.activeElement === firstElement) {
+          e.preventDefault();
+          lastElement.focus();
+        } else if (!e.shiftKey && document.activeElement === lastElement) {
+          e.preventDefault();
+          firstElement.focus();
+        }
+      }
+
+      // Escape key exits edit mode
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        component.setState({ isEditing: false });
+        if (component.elements.editButton) {
+          component.elements.editButton.focus();
+        }
+        disableFocusTrap();
+      }
+    };
+
+    form.addEventListener('keydown', focusTrapListener);
   }
 
-  // Checkbox toggle handler - uses setState for state-driven updates
-  if (checkbox && card && statusElement) {
-    checkbox.addEventListener('change', (e) => {
-      const isChecked = e.target.checked;
+  /**
+   * Disable focus trap.
+   */
+  function disableFocusTrap() {
+    if (focusTrapListener) {
+      const form = component.elements.editForm;
+      if (form) {
+        form.removeEventListener('keydown', focusTrapListener);
+      }
+      focusTrapListener = null;
+    }
+  }
 
-      // Update state - status text and is-done class toggling flows through updateUI()
-      component.setState({ data: { completed: isChecked } });
+  // --- Event Handlers ---
 
-      if (isChecked) {
-        console.log(`Todo "${todoData.title}" marked as complete.`);
-      } else {
-        console.log(`Todo "${todoData.title}" marked as pending.`);
+  // Expand/Collapse toggle
+  if (component.elements.expandToggle) {
+    const toggle = component.elements.expandToggle;
+
+    toggle.addEventListener('click', () => {
+      component.setState({ isExpanded: !component.state.isExpanded });
+    });
+
+    // Keyboard accessibility for Enter/Space
+    toggle.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        component.setState({ isExpanded: !component.state.isExpanded });
       }
     });
   }
 
-  // Edit button handler - console.log stub with access to component state
-  if (component.elements && component.elements.editButton) {
+  // Edit button
+  if (component.elements.editButton) {
     component.elements.editButton.addEventListener('click', () => {
-      console.log(`Edit button clicked for todo: "${component.state.data.title}"`);
-      if (editForm) editForm.hidden = false;
+      const { editTitle, editDescription, editPriority, editDueDate } = component.elements;
+
+      // Pre-populate form fields from current state
+      if (editTitle) editTitle.value = component.state.data.title;
+      if (editDescription) editDescription.value = component.state.data.description;
+      if (editPriority) editPriority.value = component.state.data.priority;
+      if (editDueDate) {
+        const dateVal = component.state.data.dueDate
+          ? component.state.data.dueDate.split('T')[0]
+          : '';
+        editDueDate.value = dateVal;
+      }
+
+      // Enter edit mode
+      component.setState({ isEditing: true });
+
+      // Focus first input
+      if (editTitle) editTitle.focus();
+
+      // Enable focus trap
+      if (component.elements.editForm) {
+        enableFocusTrap(component.elements.editForm);
+      }
     });
   }
 
-  // Cancel button handler
-  if (cancelBtn && editForm) {
-    cancelBtn.addEventListener('click', () => {
-      console.log(`Cancel button clicked for todo: "${todoData.title}"`);
-      editForm.hidden = true;
+  // Cancel button
+  if (component.elements.cancelButton) {
+    component.elements.cancelButton.addEventListener('click', () => {
+      component.setState({ isEditing: false });
+      if (component.elements.editButton) {
+        component.elements.editButton.focus();
+      }
+      disableFocusTrap();
     });
   }
 
-  // Save button handler
-  if (saveBtn && editForm) {
-    editForm.addEventListener('submit', (e) => {
+  // Save button / form submit
+  if (component.elements.editForm) {
+    component.elements.editForm.addEventListener('submit', (e) => {
       e.preventDefault();
-      console.log(`Save button clicked for todo: "${todoData.title}"`);
-      editForm.hidden = true;
+
+      const { editTitle, editDescription, editPriority, editDueDate } = component.elements;
+
+      // Collect form values
+      const newTitle = editTitle?.value?.trim();
+      const newDescription = editDescription?.value?.trim();
+      const newPriority = editPriority?.value;
+      const newDueDate = editDueDate?.value;
+
+      // Basic validation
+      if (!newTitle) {
+        editTitle?.focus();
+        return;
+      }
+
+      // Update state with new values
+      component.setState({
+        isEditing: false,
+        data: {
+          title: newTitle,
+          description: newDescription,
+          priority: newPriority,
+          dueDate: newDueDate ? `${newDueDate}T00:00:00.000Z` : component.state.data.dueDate,
+        },
+      });
+
+      if (component.elements.editButton) {
+        component.elements.editButton.focus();
+      }
+      disableFocusTrap();
     });
   }
 
-  // Expand toggle handler
-  if (expandToggle && collapsibleSection) {
-    expandToggle.addEventListener('click', () => {
-      const isExpanded = expandToggle.getAttribute('aria-expanded') === 'true';
-      expandToggle.setAttribute('aria-expanded', !isExpanded);
-      collapsibleSection.hidden = isExpanded;
-      console.log(`Collapsible section ${isExpanded ? 'collapsed' : 'expanded'}`);
+  // Checkbox change
+  if (component.elements.checkbox) {
+    component.elements.checkbox.addEventListener('change', (e) => {
+      const isChecked = e.target.checked;
+
+      // Sync: checkbox affects status
+      component.setState({
+        data: {
+          completed: isChecked,
+          status: isChecked ? 'Done' : component.state.data.status === 'Done' ? 'Pending' : component.state.data.status,
+        },
+      });
     });
   }
 
-  // Status control handler
-  if (statusControl && statusElement) {
-    statusControl.addEventListener('change', (e) => {
+  // Status select change
+  if (component.elements.statusSelect) {
+    component.elements.statusSelect.addEventListener('change', (e) => {
       const newStatus = e.target.value;
-      statusElement.textContent = newStatus;
-      console.log(`Status changed to: ${newStatus}`);
+
+      // Sync: dropdown affects completed and status
+      component.setState({
+        data: {
+          status: newStatus,
+          completed: newStatus === 'Done',
+        },
+      });
     });
   }
 
-  // Delete button handler - console.log stub with access to component state
-  if (component.elements && component.elements.deleteButton) {
+  // Delete button
+  if (component.elements.deleteButton) {
     component.elements.deleteButton.addEventListener('click', () => {
       console.log(`Delete button clicked for todo: "${component.state.data.title}"`);
     });
   }
 
-  // Time remaining update - uses setState for state-driven updates
-  if (component.elements && component.elements.timeRemaining && !todoData.completed) {
+  // Time remaining update
+  if (component.elements.timeRemaining && !todoData.completed) {
     setInterval(() => {
-      const newTimeText = getTimeRemaining(todoData.dueDateISO);
-
-      // Apply time remaining via setState
+      const newTimeText = getTimeRemaining(component.state.data.dueDate);
       component.setState({ data: { timeRemaining: newTimeText } });
     }, 60000);
   }
